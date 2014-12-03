@@ -1,0 +1,50 @@
+GIT
+  remote: https://github.com/ConsultingMD/ruby-fleetctl.git
+  revision: 4d47c01755a64d81299143bf803f8be89ee68926
+  specs:
+    fleetctl (0.1.4)
+      activesupport (= 4.1.7)
+      hashie (~> 2)
+      net-scp (= 1.2.1)
+      net-ssh (= 2.9.1)
+
+GIT
+  remote: https://github.com/OAGr/fig2coreos
+  revision: 426ff34979e315535302023a4c0a605cfe41594b
+  specs:
+    fig2coreos (0.1.6)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activesupport (4.1.7)
+      i18n (~> 0.6, >= 0.6.9)
+      json (~> 1.7, >= 1.7.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.1)
+      tzinfo (~> 1.1)
+    byebug (3.5.1)
+      columnize (~> 0.8)
+      debugger-linecache (~> 1.2)
+      slop (~> 3.6)
+    columnize (0.8.9)
+    debugger-linecache (1.2.0)
+    hashie (2.1.2)
+    i18n (0.6.11)
+    json (1.8.1)
+    minitest (5.4.3)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.9.1)
+    slop (3.6.0)
+    thread_safe (0.3.4)
+    tzinfo (1.2.2)
+      thread_safe (~> 0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  fig2coreos!
+  fleetctl!
