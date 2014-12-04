@@ -49,7 +49,7 @@ class Crust
   private
 
   def generate_service_files(project, sha)
-    FileUtils.rm Dir['/tmp/*.service']#.each {|s| File.delete(s)}
+    FileUtils.rm Dir['/tmp/*.service']
     ENV['SHA'] = sha
     Fig2CoreOS.convert(
       project,
@@ -60,7 +60,7 @@ class Crust
   end
 
   def start_generated_files
-    service_files = Dir['/tmp/*.service']
+    service_files = Dir['/tmp/*mysql.1.service'] + Dir['/tmp/*app.1.service']
     service_files.each do |service_file|
       start_service_file(service_file)
       File.delete(service_file)
