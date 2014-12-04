@@ -5,39 +5,72 @@ require 'byebug'
 
 class Crust
 
+  @@config = OpenStruct.new
+
   def initialize
-    Fleetctl.config( fleet_host: 'coreos.test.grandrounds.com' )
+    Fleetctl.config( fleet_host: Crust.config.host )
     @fleet = Fleetctl.new
   end
+
+  ## Class Methods ==============
+
+  def self.configure
+    yield(@@config)
+  end
+
+  def self.config
+    @@config
+  end
+
+  def self.logger
+    logger = @@config.logger
+    @@config.logger =
+      case logger
+        when String then Logger.new(logger)
+        when Logger then logger
+        else Logger.new('/tmp/crust.log')
+      end
+  end
+
+  ## Public ==============
 
   def run_build(project, sha)
     generate_service_files(project, sha)
     start_generated_files
   end
 
-  def start_logspout
-    from_here = "/service_files/logspout.service"
-    filename = (File.dirname __FILE__) + from_here
-    start_service_file(filename)
+  def start_service_file(filename)
+    result = @fleet.start(File.open(filename))
+    Crust.logger.info result
   end
+
+  ## Private ==============
 
   private
 
   def generate_service_files(project, sha)
-    ENV["SHA"] = sha
-    Fig2CoreOS.convert(project, "projects/#{project}.erb", 'tmp_service_files', {type: "fleet", skip_discovery_file: true})
-  end
-
-  def start_service_file(filename)
-    puts @fleet.start File.open(filename)
+    FileUtils.rm Dir['/tmp/*.service']#.each {|s| File.delete(s)}
+    ENV['SHA'] = sha
+    Fig2CoreOS.convert(
+      project,
+      template_path("#{project}.erb"),
+      '/tmp',
+      type: 'fleet', skip_discovery_file: true
+    )
   end
 
   def start_generated_files
-    service_files = Dir["tmp_service_files/*.service"]
+    service_files = Dir['/tmp/*.service']
     service_files.each do |service_file|
       start_service_file(service_file)
       File.delete(service_file)
     end
+  end
+
+  def template_path(file=nil)
+    path = "#{Crust.config.project_template_directory}/"
+    path << file if file.present?
+    path
   end
 
 end
