@@ -8,7 +8,9 @@ class Crust
   @@config = OpenStruct.new
 
   def initialize
-    Fleetctl.config( fleet_host: Crust.config.host )
+    host = Crust.config.host
+    ssh  = Crust.config.ssh 
+    Fleetctl.config(fleet_host: host, ssh_options: ssh)
     @fleet = Fleetctl.new
   end
 
