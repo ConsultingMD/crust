@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'fig2coreos'
+require 'coreos'
 require 'fleetctl'
 require 'byebug'
 
@@ -53,11 +53,11 @@ class Crust
   def generate_service_files(project, sha)
     FileUtils.rm Dir['/tmp/*.service']
     ENV['SHA'] = sha
-    Fig2CoreOS.convert(
+    CoreOS.convert(
       project,
       template_path("#{project}.erb"),
       '/tmp',
-      type: 'fleet', skip_discovery_file: true
+      type: 'fleet', skip_discovery_file: true, sha: sha, project: project
     )
   end
 

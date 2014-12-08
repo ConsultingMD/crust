@@ -1,0 +1,31 @@
+# Hidden files
+.idea
+.bundle
+.rvmrc
+.DS_Store
+.sass-cache
+.idea
+.idea/*
+.bundle/*
+
+
+# File types
+*.sqlite3
+*.tmproj
+*_local.yml
+*.db
+*.log
+*.dat
+*.rdb
+*.swp
+*.*~
+
+# Directories
+builds
+db
+doc
+log
+tags
+tmp
+bin
+coverage
