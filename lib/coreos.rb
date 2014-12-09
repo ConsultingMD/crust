@@ -91,7 +91,7 @@ Requires=#{after}.service
 [Service]
 ExecStartPre=/usr/bin/docker pull #{image}
 ExecStartPre=/usr/bin/docker ps -a -q | xargs docker rm
-ExecStart=/usr/bin/docker run -rm -name #{service_name}_1 #{volumes.join(" ")} #{links.join(" ")} #{envs.join(" ")} #{ports.join(" ")} #{image}
+ExecStart=/usr/bin/docker run -v /var/lib/docker/tmp:/tmp/hosttmp -rm -name #{service_name}_1 #{volumes.join(" ")} #{links.join(" ")} #{envs.join(" ")} #{ports.join(" ")} #{image}
 ExecStartPost=/usr/bin/docker ps -a -q | xargs docker rm
 ExecStop=/usr/bin/docker kill #{service_name}_1
 ExecStopPost=/usr/bin/docker ps -a -q | xargs docker rm
