@@ -6,6 +6,7 @@ require 'byebug'
 class Crust
 
   @@config = OpenStruct.new
+  attr_accessor :fleet
 
   def initialize
     host = Crust.config.host
@@ -41,14 +42,31 @@ class Crust
     start_generated_files
   end
 
+  def destroy_build(project, sha)
+    filenames(project, sha).each do |service_file|
+      fleet.destroy(service_file)
+    end
+  end
+
   def start_service_file(filename)
     result = @fleet.start(File.open(filename))
     Crust.logger.info result
   end
 
+  def get_services
+    fleet.unit_names
+  end
+
   ## Private ==============
 
   private
+
+  def filenames(project, sha)
+    [
+      "#{project}_#{sha}_app.1.service",
+      "#{project}_#{sha}_mysql.1.service"
+    ]
+  end
 
   def generate_service_files(project, sha)
     FileUtils.rm Dir['/tmp/*.service']
