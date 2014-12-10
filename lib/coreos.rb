@@ -1,14 +1,13 @@
 class CoreOS
 
-  def self.convert(service_file, output_dir, options={})
-    CoreOS.new(service_file, output_dir, options)
+  def self.convert(service, out_path, options={})
+    CoreOS.new(service, out_path, options)
   end
 
-  def initialize(service_file, output_dir, options={})
-    @app_name   = app_name
-    @services   = load_yml(service_file.to_s, options)
-    @output_dir = File.expand_path(output_dir.to_s)
-    @options    = options
+  def initialize(service, out_path, options={})
+    @services = load_yml(service.to_s, options)
+    @out_path = File.expand_path(out_path.to_s)
+    @options  = options
     load_templates
     setup_directory_structure
     create_service_files
@@ -17,10 +16,10 @@ class CoreOS
   private
 
   def create_service_files
-    @services.each do |service_name, service|
+    @services.each do |name, service|
 
-      locals = create_local_vars(service_name, service)
-      file_name = path_to("#{service_name}.1.service")
+      locals = create_local_vars(name, service)
+      file_name = path_to("#{name}.1.service")
 
       File.open(file_name, 'w') do |file|
         file << template(:service, locals)
@@ -30,12 +29,12 @@ class CoreOS
   end
 
   # This assumes that all attempted files other than .erb can be parsed as yaml
-  def load_yml(filename, options={})
-    case File.extname(filename)
+  def load_yml(template, options={})
+    case File.extname(template)
       when '.erb'
-        parse_erb(filename, options)
+        parse_erb(template, options)
       else
-        YAML.load_file(filename)
+        YAML.load_file(template)
     end
   end
 
@@ -48,15 +47,17 @@ class CoreOS
     I18n.backend.translate(:en, name, options)
   end
 
-  def create_local_vars(service_name, service)
-    image   = service['image']
-    ports   = (service['ports']       || []).map{|port| "-p #{port}"}
-    volumes = (service['volumes']     || []).map{|volume| "-v #{volume}"}
-    links   = (service['links']       || []).map{|link| "--link #{link}_1:mysql"}
-    envs    = (service['environment'] || []).map{|env_name, env_value| "-e \"#{env_name}=#{env_value}\"" }
-    after   = (service['links'].present? ? "#{service['links'].last}.1" : 'docker')
+  def create_local_vars(name, service)
+    service = service.symbolize_keys
+    image   = service[:image]
+    ports   = (service[:ports]       || []).map{|port| "-p #{port}"}
+    volumes = (service[:volumes]     || []).map{|volume| "-v #{volume}"}
+    links   = (service[:links]       || []).map{|link| "--link #{link}_1:mysql"}
+    envs    = (service[:environment] || []).map{|name, value| "-e \"#{name}=#{value}\"" }
+    after   = (service[:links].present? ? "#{service[:links].last}.1" : 'docker')
+
     {
-      service_name: service_name,
+      service_name: name,
       volumes:      volumes.join(' '),
       after:        after,
       links:        links.join(' '),
@@ -82,7 +83,7 @@ class CoreOS
   end
 
   def path_to(*args)
-    File.join(@output_dir, *args)
+    File.join(@out_path, *args)
   end
 
   def parse_erb(filename, options)

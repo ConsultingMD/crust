@@ -23,12 +23,12 @@ class Crust
     new(project: project, sha: sha).start!
   end
 
-  def self.start_service(file)
-    new.start_service(file)
+  def self.destroy(project, sha)
+    new(project: project, sha: sha).destroy!
   end
 
-  def self.destroy(project, sha)
-    new(project, sha).destroy!
+  def self.start_service(file)
+    new.start_service(file)
   end
 
   def self.configure
@@ -57,13 +57,13 @@ class Crust
   end
 
   def destroy!
-    filenames.each do |service_file|
-      fleet.destroy(service_file)
-    end
+    service_files.each{|service| fleet.destroy(service) }
   end
 
-  def start_service(service_file)
-    result = @fleet.start(File.open(service_file))
+  def start_service(service = nil)
+    service = service.presence || @service
+    return unless service.present?
+    result = @fleet.start(File.open(service))
     logger.info result
     result
   end
@@ -84,11 +84,8 @@ class Crust
 
   private
 
-  def filenames
-    [
-      "#{project}_#{sha}_app.1.service",
-      "#{project}_#{sha}_mysql.1.service"
-    ]
+  def service_files
+    %w[app mysql].map{|type| "#{project}_#{sha}_#{type}.1.service" }
   end
 
   def generate_service_files
