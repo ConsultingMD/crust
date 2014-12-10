@@ -31,6 +31,10 @@ class Crust
     new.start_service(file)
   end
 
+  def self.get_services
+    new.get_services
+  end
+
   def self.configure
     yield(@@config)
   end
