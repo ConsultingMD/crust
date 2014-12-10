@@ -1,5 +1,9 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem 'fleetctl', '0.1.4.1', git: 'git://github.com/ConsultingMD/ruby-fleetctl.git'
+gem 'fleetctl', '0.1.4.2', git: 'git://github.com/ConsultingMD/ruby-fleetctl.git'
 gem 'i18n'
-gem 'byebug'
+
+group :test, :development do
+  gem 'rspec'
+  gem 'byebug'
+end

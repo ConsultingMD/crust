@@ -6,6 +6,7 @@ require 'byebug'
 class Crust
 
   @@config = OpenStruct.new
+  attr_accessor :fleet
 
   attr_reader :fleet, :project, :sha
 
@@ -26,8 +27,8 @@ class Crust
     new.start_service(file)
   end
 
-  def self.stop(project, sha)
-    new(project, sha).stop!
+  def self.destroy(project, sha)
+    new(project, sha).destroy!
   end
 
   def self.configure
@@ -55,8 +56,10 @@ class Crust
     run_service_files
   end
 
-  def stop!
-    raise 'Not Implemented yet'
+  def destroy!
+    filenames.each do |service_file|
+      fleet.destroy(service_file)
+    end
   end
 
   def start_service(service_file)
@@ -73,9 +76,20 @@ class Crust
     Crust.config.ssh
   end
 
+  def get_services
+    fleet.unit_names
+  end
+
   ## Private ==============
 
   private
+
+  def filenames
+    [
+      "#{project}_#{sha}_app.1.service",
+      "#{project}_#{sha}_mysql.1.service"
+    ]
+  end
 
   def generate_service_files
     FileUtils.rm Dir['/tmp/*.service']
