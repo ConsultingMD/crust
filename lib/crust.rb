@@ -7,14 +7,28 @@ class Crust
 
   @@config = OpenStruct.new
 
-  def initialize
-    host = Crust.config.host
-    ssh  = Crust.config.ssh 
-    Fleetctl.config(fleet_host: host, ssh_options: ssh)
-    @fleet = Fleetctl.new
+  attr_reader :fleet, :project, :sha
+
+  def initialize(options={})
+    @project = options[:project]
+    @sha     = options[:sha]
+    @service = options[:service]
+    @fleet   = initialize_fleet
   end
 
   ## Class Methods ==============
+
+  def self.start(project, sha)
+    new(project: project, sha: sha).start!
+  end
+
+  def self.start_service(file)
+    new.start_service(file)
+  end
+
+  def self.stop(project, sha)
+    new(project, sha).stop!
+  end
 
   def self.configure
     yield(@@config)
@@ -36,46 +50,60 @@ class Crust
 
   ## Public ==============
 
-  def run_build(project, sha)
-    generate_service_files(project, sha)
-    start_generated_files
+  def start!
+    generate_service_files
+    run_service_files
   end
 
-  def start_service_file(filename)
-    result = @fleet.start(File.open(filename))
-    Crust.logger.info result
+  def stop!
+    raise 'Not Implemented yet'
+  end
+
+  def start_service(service_file)
+    result = @fleet.start(File.open(service_file))
+    logger.info result
+    result
+  end
+
+  def fleet_host
+    Crust.config.host
+  end
+
+  def ssh_options
+    Crust.config.ssh
   end
 
   ## Private ==============
 
   private
 
-  def generate_service_files(project, sha)
+  def generate_service_files
     FileUtils.rm Dir['/tmp/*.service']
-    ENV['SHA'] = sha
-    CoreOS.convert(
-      project,
-      template_path("#{project}.erb"),
-      '/tmp',
-      type: 'fleet', skip_discovery_file: true, sha: sha, project: project
-    )
+    CoreOS.convert(service_template, '/tmp', service_options)
   end
 
-  def start_generated_files
+  def run_service_files
     service_files = Dir['/tmp/*mysql.1.service'] + Dir['/tmp/*app.1.service']
     service_files.each do |service_file|
-      start_service_file(service_file)
+      start_service(service_file)
       File.delete(service_file)
     end
   end
 
-  def template_path(file=nil)
-    path = "#{Crust.config.project_template_directory}/"
-    path << file if file.present?
-    path
+  def service_options
+    {type: 'fleet', project: project, sha: sha}
   end
 
-end
+  def service_template
+    Crust.config.service_template
+  end
 
-#Crust.new.start_logspout
-#Crust.new.run_build('tp', 'c74f5c1')
+  def initialize_fleet
+    Fleetctl.config(fleet_host: fleet_host, ssh_options: ssh_options)
+    Fleetctl.new
+  end
+
+  def logger
+    Crust.logger
+  end
+end
