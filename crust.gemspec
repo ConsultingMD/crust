@@ -3,7 +3,7 @@ lib = File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'crust'
-  s.version     = '0.0.6'
+  s.version     = '0.0.7'
   s.date        = '2014-12-09'
   s.summary     = 'Works with CoreOS'
   s.description = 'A simple coreos gem'
