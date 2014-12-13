@@ -1,7 +1,8 @@
-PATH
-  remote: ~/ruby-fleetctl/
+GIT
+  remote: git://github.com/ConsultingMD/ruby-fleetctl.git
+  revision: 184d8c2882d82ed6ec8bfdc360aec40fc9ffa894
   specs:
-    fleetctl (0.1.4.1)
+    fleetctl (0.1.4.2)
       activesupport
       hashie (~> 2)
       net-scp (= 1.2.1)
@@ -10,7 +11,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.1.7)
+    activesupport (4.1.8)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -52,6 +53,6 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
-  fleetctl!
+  fleetctl (= 0.1.4.2)!
   i18n
   rspec

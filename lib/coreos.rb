@@ -49,12 +49,16 @@ class CoreOS
 
   def create_local_vars(name, service)
     service = service.symbolize_keys
+    service[:xfleet].symbolize_keys! if service[:xfleet]
+
     image   = service[:image]
     ports   = (service[:ports]       || []).map{|port| "-p #{port}"}
     volumes = (service[:volumes]     || []).map{|volume| "-v #{volume}"}
     links   = (service[:links]       || []).map{|link| "--link #{link}_1:mysql"}
     envs    = (service[:environment] || []).map{|name, value| "-e \"#{name}=#{value}\"" }
     after   = (service[:links].present? ? "#{service[:links].last}.1" : 'docker')
+    xfleet   = ( service[:xfleet] ? true : false )
+    machineof   = machine_of(service)
 
     {
       service_name: name,
@@ -63,8 +67,18 @@ class CoreOS
       links:        links.join(' '),
       envs:         envs.join(' '),
       ports:        ports.join(' '),
-      image:        image
+      image:        image,
+      xfleet:       xfleet,
+      machine_of:   machineof
     }
+  end
+
+  def machine_of(service)
+    if service[:xfleet] and service[:xfleet][:machineof]
+      "Machineof=#{service[:xfleet][:machineof]}"
+    else
+      ""
+    end
   end
 
   def get_port(service)
@@ -93,4 +107,5 @@ class CoreOS
     read_token = ENV['GITHUB_READ_TOKEN']
     YAML.load(ERB.new(File.read(filename.to_s)).result(binding))
   end
+
 end
