@@ -19,7 +19,7 @@ class CoreOS
     @services.each do |name, service|
 
       locals = create_local_vars(name, service)
-      file_name = path_to("#{name}.1.service")
+      file_name = path_to("#{name}.service")
 
       File.open(file_name, 'w') do |file|
         file << template(:service, locals)
@@ -54,9 +54,9 @@ class CoreOS
     image   = service[:image]
     ports   = (service[:ports]       || []).map{|port| "-p #{port}"}
     volumes = (service[:volumes]     || []).map{|volume| "-v #{volume}"}
-    links   = (service[:links]       || []).map{|link| "--link #{link}_1:mysql"}
+    links   = (service[:links]       || []).map{|link| "--link #{link}:mysql"}
     envs    = (service[:environment] || []).map{|name, value| "-e \"#{name}=#{value}\"" }
-    after   = (service[:links].present? ? "#{service[:links].last}.1" : 'docker')
+    after   = (service[:links].present? ? "#{service[:links].last}" : 'docker')
     xfleet   = ( service[:xfleet] ? true : false )
     machineof   = machine_of(service)
 
@@ -101,9 +101,8 @@ class CoreOS
   end
 
   def parse_erb(filename, options)
-    project = options[:project]
-    sha = options[:sha]
-    project_sha = "#{project}_#{sha}"
+    project, sha, id = [:project, :sha, :id].map{|i| options[i]}
+    build_name = "#{project}_#{sha}_#{id}"
     read_token = ENV['GITHUB_READ_TOKEN']
     YAML.load(ERB.new(File.read(filename.to_s)).result(binding))
   end

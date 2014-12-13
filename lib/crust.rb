@@ -8,23 +8,24 @@ class Crust
   @@config = OpenStruct.new
   attr_accessor :fleet
 
-  attr_reader :fleet, :project, :sha
+  attr_reader :fleet, :project, :sha, :id
 
   def initialize(options={})
     @project = options[:project]
     @sha     = options[:sha]
     @service = options[:service]
+    @id = options[:id]
     @fleet   = initialize_fleet
   end
 
   ## Class Methods ==============
 
-  def self.start(project, sha)
-    new(project: project, sha: sha).start!
+  def self.start(project, sha, id)
+    new(project: project, sha: sha, id: id).start!
   end
 
-  def self.destroy(project, sha)
-    new(project: project, sha: sha).destroy!
+  def self.destroy(project, sha, id)
+    new(project: project, sha: sha, id: id).destroy!
   end
 
   def self.start_service(file)
@@ -89,7 +90,7 @@ class Crust
   private
 
   def service_files
-    %w[app mysql].map{|type| "#{project}_#{sha}_#{type}.1.service" }
+    %w[app mysql].map{|type| "#{project}_#{sha}_#{id}_#{type}.service" }
   end
 
   def generate_service_files
@@ -98,7 +99,7 @@ class Crust
   end
 
   def run_service_files
-    service_files = Dir['/tmp/*mysql.1.service'] + Dir['/tmp/*app.1.service']
+    service_files = Dir['/tmp/*mysql.service'] + Dir['/tmp/*app.service']
     service_files.each do |service_file|
       start_service(service_file)
       File.delete(service_file)
@@ -106,7 +107,7 @@ class Crust
   end
 
   def service_options
-    {type: 'fleet', project: project, sha: sha}
+    {type: 'fleet', project: project, sha: sha, id: id}
   end
 
   def service_template
