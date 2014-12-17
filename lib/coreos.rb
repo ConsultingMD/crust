@@ -57,8 +57,8 @@ class CoreOS
     links   = (service[:links]       || []).map{|link| "--link #{link}:mysql"}
     envs    = (service[:environment] || []).map{|name, value| "-e \"#{name}=#{value}\"" }
     after   = (service[:links].present? ? "#{service[:links].last}" : 'docker')
-    xfleet   = ( service[:xfleet] ? true : false )
-    machineof   = machine_of(service)
+    xfleet  = service[:xfleet].present?
+    machine = machine_of(service)
 
     {
       service_name: name,
@@ -69,16 +69,13 @@ class CoreOS
       ports:        ports.join(' '),
       image:        image,
       xfleet:       xfleet,
-      machine_of:   machineof
+      machine_of:   machine
     }
   end
 
   def machine_of(service)
-    if service[:xfleet] and service[:xfleet][:machineof]
-      "MachineOf=#{service[:xfleet][:machineof]}"
-    else
-      ""
-    end
+    machine = service[:xfleet][:machineof] rescue nil
+    machine.presence ? "MachineOf=#{machine}" : ''
   end
 
   def get_port(service)
