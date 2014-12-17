@@ -75,7 +75,7 @@ class CoreOS
 
   def machine_of(service)
     if service[:xfleet] and service[:xfleet][:machineof]
-      "Machineof=#{service[:xfleet][:machineof]}"
+      "MachineOf=#{service[:xfleet][:machineof]}"
     else
       ""
     end
