@@ -5,5 +5,5 @@ Description=JournalLog
 TimeoutStartSec=0
 ExecStart=/usr/bin/journalctl -o short -f | ncat --udp logs2.papertrailapp.com 49166
 
-[X-fleet]
+[X-Fleet]
 Global=true

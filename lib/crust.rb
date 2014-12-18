@@ -82,7 +82,7 @@ class Crust
   end
 
   def get_services
-    fleet.unit_names
+    fleet.units_once
   end
 
   ## Private ==============
