@@ -32,8 +32,8 @@ class Crust
     new.start_service(file)
   end
 
-  def self.get_services
-    new.get_services
+  def self.get_service_status
+    new.get_service_status
   end
 
   def self.configure
@@ -81,13 +81,33 @@ class Crust
     Crust.config.ssh
   end
 
-  def get_services
-    fleet.units_once
+  def get_service_status
+    formated_services(fleet.units_once)
   end
+
 
   ## Private ==============
 
   private
+
+  def formated_services(services)
+    services = services.select{|s| s[:name].scan(/_/).count == 3}
+    services.each do|service|
+      app, sha, id, type = service[:name].split("_")
+      type = type.split(".").first
+      {app: app, sha: sha, id: id, type: type}.each do |k,v|
+        service[k] = v
+      end
+    end
+    services.each{|s| s[:id] = s[:name].split("_")[2] }
+    ids = services.map{|s| s[:id]}.uniq.compact
+
+    id_sha = {}
+    ids.each do |id|
+      id_sha[id] = services.select{|s| s[:id] == id}
+    end
+    id_sha
+  end
 
   def service_files
     %w[app mysql].map{|type| "#{project}_#{sha}_#{id}_#{type}.service" }
