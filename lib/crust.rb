@@ -44,6 +44,10 @@ class Crust
     @@config
   end
 
+  def self.get_machines
+    new.get_machines
+  end
+
   def self.logger
     logger = @@config.logger
     @@config.logger =
@@ -85,6 +89,9 @@ class Crust
     formated_services(fleet.units_once)
   end
 
+  def get_machines
+    machines = fleet.machines.map{|m| m.ip}
+  end
 
   ## Private ==============
 
