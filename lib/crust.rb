@@ -15,13 +15,14 @@ class Crust
     @sha     = options[:sha]
     @service = options[:service]
     @id = options[:id]
+    @template_name = options[:template_name]
     @fleet   = initialize_fleet
   end
 
   ## Class Methods ==============
 
-  def self.start(project, sha, id)
-    new(project: project, sha: sha, id: id).start!
+  def self.start(project, sha, id, template_name)
+    new(project: project, sha: sha, id: id, template_name: template_name).start!
   end
 
   def self.destroy(project, sha, id)
@@ -138,7 +139,13 @@ class Crust
   end
 
   def service_template
-    Crust.config.service_template
+    service_template_hash[@template_name]
+  end
+
+  def service_template_hash
+    paths = Dir[Crust.config.service_templates + "/*"]
+    filename = ->(path) { File.basename(path, ".erb") }
+    Hash[ paths.map{ |path| [ filename.call(path), path ] } ]
   end
 
   def initialize_fleet
