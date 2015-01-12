@@ -1,7 +1,9 @@
 class CoreOS
 
+  attr_reader :service_filenames
+
   def self.convert(service, out_path, options={})
-    CoreOS.new(service, out_path, options)
+    CoreOS.new(service, out_path, options).service_filenames
   end
 
   def initialize(service, out_path, options={})
@@ -10,7 +12,7 @@ class CoreOS
     @options  = options
     load_templates
     setup_directory_structure
-    create_service_files
+    @service_filenames = create_service_files
   end
 
   private
@@ -26,6 +28,7 @@ class CoreOS
       end
 
     end
+    @services.keys
   end
 
   # This assumes that all attempted files other than .erb can be parsed as yaml
@@ -52,9 +55,12 @@ class CoreOS
     service[:xfleet].symbolize_keys! if service[:xfleet]
 
     image   = service[:image]
+    command = service[:command].present? ? "/bin/bash -c '#{service[:command]}'" : ''
     ports   = (service[:ports]       || []).map{|port| "-p #{port}"}
     volumes = (service[:volumes]     || []).map{|volume| "-v #{volume}"}
-    links   = (service[:links]       || []).map{|link| "--link #{link}:mysql"}
+
+    #This assumes that the container names end with their app name
+    links   = (service[:links]       || []).map{|link| "--link #{link}:#{link.split("_").last}"}
     envs    = (service[:environment] || []).map{|name, value| "-e \"#{name}=#{value}\"" }
     after   = (service[:links].present? ? "#{service[:links].last}" : 'docker')
     xfleet  = service[:xfleet].present?
@@ -69,6 +75,7 @@ class CoreOS
       ports:        ports.join(' '),
       image:        image,
       xfleet:       xfleet,
+      command:      command,
       machine_of:   machine
     }
   end

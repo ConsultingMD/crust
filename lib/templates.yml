@@ -7,7 +7,7 @@ service: |
   [Service]
   ExecStartPre=/usr/bin/docker pull %{image}
   ExecStartPre=/usr/bin/docker ps -a -q | xargs docker rm
-  ExecStart=/usr/bin/docker run -v /var/lib/docker/tmp:/tmp/hosttmp -rm -name %{service_name} %{volumes} %{links} %{envs} %{ports} %{image}
+  ExecStart=/usr/bin/docker run -v /var/lib/docker/tmp:/tmp/hosttmp -rm -name %{service_name} %{volumes} %{links} %{envs} %{ports} %{image} %{command}
   ExecStartPost=/usr/bin/docker ps -a -q | xargs docker rm
   ExecStop=/usr/bin/docker kill %{service_name}
   ExecStopPost=/usr/bin/docker ps -a -q | xargs docker rm
