@@ -138,7 +138,7 @@ class Crust
   def run_service_files
     service_filenames_with_path.each do |service_file|
       start_service(service_file)
-      File.delete(service_file)
+      File.try(:delete, service_file)
     end
   end
 
