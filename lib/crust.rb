@@ -8,20 +8,22 @@ class Crust
   @@config = OpenStruct.new
   attr_accessor :fleet
 
-  attr_reader :fleet, :project, :sha, :id
+  attr_reader :fleet, :project, :sha, :id, :template_name, :service_filenames
 
   def initialize(options={})
     @project = options[:project]
     @sha     = options[:sha]
     @service = options[:service]
     @id = options[:id]
+    @template_name = options[:template_name]
     @fleet   = initialize_fleet
+    @service_filenames = []
   end
 
   ## Class Methods ==============
 
-  def self.start(project, sha, id)
-    new(project: project, sha: sha, id: id).start!
+  def self.start(project, sha, id, template_name)
+    new(project: project, sha: sha, id: id, template_name: template_name).start!
   end
 
   def self.destroy(project, sha, id)
@@ -61,12 +63,12 @@ class Crust
   ## Public ==============
 
   def start!
-    generate_service_files
+    @service_filenames = generate_service_files
     run_service_files
   end
 
   def destroy!
-    service_files.each{|service| fleet.destroy(service) }
+    service_filenames_from_fleet.each{|service| fleet.destroy(service) }
   end
 
   def start_service(service = nil)
@@ -94,7 +96,6 @@ class Crust
   end
 
   ## Private ==============
-
   private
 
   def formated_services(services)
@@ -116,8 +117,9 @@ class Crust
     id_sha
   end
 
-  def service_files
-    %w[app mysql].map{|type| "#{project}_#{sha}_#{id}_#{type}.service" }
+  def service_filenames_from_fleet
+    services_by_id = get_service_status
+    (services_by_id[id.to_s] || []).map{|s| s[:name]}
   end
 
   def generate_service_files
@@ -125,11 +127,18 @@ class Crust
     CoreOS.convert(service_template, '/tmp', service_options)
   end
 
+  def service_filenames_with_type
+    @service_filenames.map{|f| "#{f}.service"}.reverse
+  end
+
+  def service_filenames_with_path
+    service_filenames_with_type.map{|f| Dir["/tmp/#{f}"].first}
+  end
+
   def run_service_files
-    service_files = Dir['/tmp/*mysql.service'] + Dir['/tmp/*app.service']
-    service_files.each do |service_file|
+    service_filenames_with_path.each do |service_file|
       start_service(service_file)
-      File.delete(service_file)
+      File.try(:delete, service_file)
     end
   end
 
@@ -138,7 +147,13 @@ class Crust
   end
 
   def service_template
-    Crust.config.service_template
+    service_template_hash[@template_name]
+  end
+
+  def service_template_hash
+    paths = Dir[Crust.config.service_templates + "/*"]
+    filename = ->(path) { File.basename(path, ".erb") }
+    Hash[ paths.map{ |path| [ filename.call(path), path ] } ]
   end
 
   def initialize_fleet
