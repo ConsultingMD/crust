@@ -1,33 +1,26 @@
-#!/usr/bin/env ruby
 require 'coreos'
 require 'fleetctl'
 require 'byebug'
 
 class Crust
-
   @@config = OpenStruct.new
-  attr_accessor :fleet
 
-  attr_reader :fleet, :project, :sha, :id, :template_name, :service_filenames
+  attr_reader :fleet, :project, :sha, :id, :branch, :template_name, :service_filenames
 
   def initialize(options={})
-    @project = options[:project]
-    @sha     = options[:sha]
-    @service = options[:service]
-    @id = options[:id]
-    @template_name = options[:template_name]
+    options.each{|key, val| instance_variable_set(:"@#{key}", val) }
     @fleet   = initialize_fleet
     @service_filenames = []
   end
 
   ## Class Methods ==============
 
-  def self.start(project, sha, id, template_name)
-    new(project: project, sha: sha, id: id, template_name: template_name).start!
+  def self.start(options={})
+    new(options).start!
   end
 
-  def self.destroy(project, sha, id)
-    new(project: project, sha: sha, id: id).destroy!
+  def self.destroy(options={})
+    new(options).destroy!
   end
 
   def self.start_service(file)
@@ -92,7 +85,7 @@ class Crust
   end
 
   def get_machines
-    machines = fleet.machines.map{|m| m.ip}
+    fleet.machines.map{|m| m.ip}
   end
 
   ## Private ==============
@@ -143,7 +136,7 @@ class Crust
   end
 
   def service_options
-    {type: 'fleet', project: project, sha: sha, id: id}
+    {type: 'fleet', project: project, sha: sha, id: id, branch: branch}
   end
 
   def service_template
@@ -151,8 +144,8 @@ class Crust
   end
 
   def service_template_hash
-    paths = Dir[Crust.config.service_templates + "/*"]
-    filename = ->(path) { File.basename(path, ".erb") }
+    paths = Dir[Crust.config.service_templates + '/*']
+    filename = ->(path) { File.basename(path, '.erb') }
     Hash[ paths.map{ |path| [ filename.call(path), path ] } ]
   end
 

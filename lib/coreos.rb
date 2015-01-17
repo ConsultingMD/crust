@@ -105,7 +105,7 @@ class CoreOS
   end
 
   def parse_erb(filename, options)
-    project, sha, id = [:project, :sha, :id].map{|i| options[i]}
+    project, sha, id, branch = [:project, :sha, :id, :branch].map{|key| options[key] }
     build_name = "#{project}_#{sha}_#{id}"
     read_token = ENV['GITHUB_READ_TOKEN']
     YAML.load(ERB.new(File.read(filename.to_s)).result(binding))
