@@ -11,6 +11,8 @@ service: |
   ExecStartPost=/usr/bin/docker ps -a -q | xargs docker rm
   ExecStop=/usr/bin/docker kill %{service_name}
   ExecStopPost=/usr/bin/docker ps -a -q | xargs docker rm
+  RestartSec=5
+  Restart=on-failure
 
   [Install]
   WantedBy=local.target
