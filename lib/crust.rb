@@ -72,12 +72,8 @@ class Crust
     result
   end
 
-  def fleet_host
-    Crust.config.host
-  end
-
-  def ssh_options
-    Crust.config.ssh
+  def fleetctl_options
+    Crust.config.fleetctl_options
   end
 
   def get_service_status
@@ -150,7 +146,7 @@ class Crust
   end
 
   def initialize_fleet
-    Fleetctl.config(fleet_host: fleet_host, ssh_options: ssh_options)
+    Fleetctl.config(fleetctl_options)
     Fleetctl.new
   end
 
