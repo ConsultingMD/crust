@@ -6,11 +6,11 @@ service: |
 
   [Service]
   ExecStartPre=-/usr/bin/docker kill %{service_name}
-  ExecStartPre=-/usr/bin/docker rm %{service_file}
+  ExecStartPre=-/usr/bin/docker rm %{service_name}
   ExecStartPre=/usr/bin/docker pull %{image}
   ExecStart=/usr/bin/docker run --rm -v /var/lib/docker/tmp:/tmp/hosttmp --name %{service_name} %{volumes} %{links} %{envs} %{ports} %{image} %{command}
   ExecStop=/usr/bin/docker kill %{service_name}
-  ExecStop=/usr/bin/docker rm %{service_file}
+  ExecStop=/usr/bin/docker rm %{service_name}
 
 
   [Install]
