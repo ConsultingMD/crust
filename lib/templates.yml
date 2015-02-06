@@ -5,12 +5,12 @@ service: |
   Requires=%{after}.service
 
   [Service]
+  ExecStartPre=-/usr/bin/docker kill %{service_name}
+  ExecStartPre=-/usr/bin/docker rm %{service_name}
   ExecStartPre=/usr/bin/docker pull %{image}
-  ExecStartPre=/usr/bin/docker ps -a -q | xargs docker rm
-  ExecStart=/usr/bin/docker run -v /var/lib/docker/tmp:/tmp/hosttmp -rm -name %{service_name} %{volumes} %{links} %{envs} %{ports} %{image} %{command}
-  ExecStartPost=/usr/bin/docker ps -a -q | xargs docker rm
+  ExecStart=/usr/bin/docker run -v /var/lib/docker/tmp:/tmp/hosttmp --name %{service_name} %{volumes} %{links} %{envs} %{ports} %{image} %{command}
   ExecStop=/usr/bin/docker kill %{service_name}
-  ExecStopPost=/usr/bin/docker ps -a -q | xargs docker rm
+  ExecStop=/usr/bin/docker rm %{service_name}
 
   [Install]
   WantedBy=local.target
