@@ -105,7 +105,7 @@ class CoreOS
   end
 
   def parse_erb(filename, options)
-    project, sha, id, branch, mysql_database_url, jarvis_addr = [:project, :sha, :id, :branch, :mysql_database_url, :jarvis_addr].map{|key| options[key] }
+    project, sha, id, branch, mysql_database_url, jarvis_addr, frick_url = [:project, :sha, :id, :branch, :mysql_database_url, :jarvis_addr, :frick_url].map{|key| options[key] }
     build_name = "#{project}_#{sha}_#{id}"
     read_token = ENV['GITHUB_READ_TOKEN']
     YAML.load(ERB.new(File.read(filename.to_s)).result(binding))

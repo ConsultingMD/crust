@@ -5,7 +5,7 @@ require 'byebug'
 class Crust
   @@config = OpenStruct.new
 
-  attr_reader :fleet, :project, :sha, :id, :branch, :template_name, :service_filenames, :mysql_database_url, :jarvis_addr
+  attr_reader :fleet, :project, :sha, :id, :branch, :template_name, :service_filenames, :mysql_database_url, :jarvis_addr, :frick_url
 
   def initialize(options={})
     options.each{|key, val| instance_variable_set(:"@#{key}", val) }
@@ -132,7 +132,7 @@ class Crust
   end
 
   def service_options
-    {type: 'fleet', project: project, sha: sha, id: id, branch: branch, mysql_database_url: mysql_database_url, jarvis_addr: jarvis_addr}
+    {type: 'fleet', project: project, sha: sha, id: id, branch: branch, mysql_database_url: mysql_database_url, jarvis_addr: jarvis_addr, frick_url: frick_url}
   end
 
   def service_template
